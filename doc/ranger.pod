@@ -230,8 +230,9 @@ C<img2txt> (from C<caca-utils>) for ASCII-art image previews
 
 =item -
 
-C<w3mimgdisplay>, C<ueberzug>, C<mpv>, C<iTerm2>, C<kitty>, C<terminology> or
-C<urxvt> for image previews
+C<w3mimgdisplay>, C<ueberzug>, C<mpv>, C<iTerm2>, C<kitty> (or other terminal
+supporting the Kitty graphics protocol), C<terminology> or C<urxvt> for image
+previews
 
 =item -
 
@@ -251,7 +252,7 @@ C<highlight>, C<bat> or C<pygmentize> for syntax highlighting of code
 
 =item -
 
-C<atool>, C<bsdtar>, C<unrar> and/or C<7z> to preview archives
+C<atool>, C<bsdtar>, C<unrar> and/or C<7zz> to preview archives
 
 =item -
 
@@ -342,7 +343,8 @@ Preferred dithering method can be specified by setting C<sixel_dithering>.
 
 =head3 kitty
 
-This only works in Kitty. It requires PIL (or pillow) to work.
+This works in terminals supporting the Kitty graphics protocol. It requires PIL
+(or pillow) to work.
 Allows remote image previews, for example in an ssh session.
 
 To enable this feature, set the option C<preview_images_method> to kitty.
@@ -2235,7 +2237,7 @@ provided along with the source code.
 
 =head1 LICENSE
 
-GNU General Public License 3 or (at your option) any later version.
+GNU General Public License 3.
 
 
 
@@ -2244,9 +2246,9 @@ GNU General Public License 3 or (at your option) any later version.
 
 =over
 
-=item Download: L<https://ranger.github.io/ranger-stable.tar.gz>
+=item Download: L<https://ranger.fm/ranger-stable.tar.gz>
 
-=item The project page: L<https://ranger.github.io/>
+=item The project page: L<https://ranger.fm/>
 
 =item The mailing list: L<https://savannah.nongnu.org/mail/?group=ranger>
 

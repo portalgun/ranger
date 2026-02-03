@@ -134,7 +134,7 @@ class Actions(  # pylint: disable=too-many-instance-attributes,too-many-public-m
             return value
         if list in types:
             return value.split(',')
-        raise ValueError("Invalid value `%s' for option `%s'!" % (name, value))
+        raise ValueError("Invalid value `%s' for option `%s'!" % (value, name))
 
     def toggle_visual_mode(self, reverse=False, narg=None):
         """:toggle_visual_mode
@@ -719,8 +719,10 @@ class Actions(  # pylint: disable=too-many-instance-attributes,too-many-public-m
         if func is not None:
             self.settings['sort'] = str(func)
 
-    def mark_files(  # pylint: disable=redefined-builtin,too-many-arguments
-        self, *, all=False, toggle=False, val=None, movedown=None, narg=None
+    def mark_files(
+        # pylint: disable=redefined-builtin,too-many-arguments
+        # pylint: disable=too-many-positional-arguments
+        self, all=False, toggle=False, val=None, movedown=None, narg=None
     ):
         """A wrapper for the directory.mark_xyz functions.
 
@@ -818,6 +820,8 @@ class Actions(  # pylint: disable=too-many-instance-attributes,too-many-public-m
             elif order == 'tag':
                 def fnc(obj):
                     return obj.realpath in self.tags
+            else:
+                raise RuntimeError("Unreachable code has been reached")
 
             return self.thisdir.search_fnc(fnc=fnc, offset=offset, forward=forward)
 
@@ -955,6 +959,7 @@ class Actions(  # pylint: disable=too-many-instance-attributes,too-many-public-m
 
     def hide_console_info(self):
         self.ui.browser.draw_info = False
+        self.ui.browser.need_clear = True
 
     # --------------------------
     # -- Pager
@@ -1055,15 +1060,20 @@ class Actions(  # pylint: disable=too-many-instance-attributes,too-many-public-m
             return None
 
         if not self.settings.preview_script or not self.settings.use_preview_script:
-            try:
-                # XXX: properly determine file's encoding
-                # Disable the lint because the preview is read outside the
-                # local scope.
-                # pylint: disable=consider-using-with
-                return codecs.open(path, 'r', errors='ignore')
-            # IOError for Python2, OSError for Python3
-            except (IOError, OSError):
-                return None
+            if PY3:
+                try:
+                    return open(path, 'r', errors='ignore', encoding='utf-8')
+                except OSError:
+                    return None
+            else:
+                try:
+                    # XXX: properly determine file's encoding
+                    # Disable the lint because the preview is read outside the
+                    # local scope.
+                    # pylint: disable=consider-using-with,deprecated-method
+                    return codecs.open(path, 'r', errors='ignore')
+                except IOError:
+                    return None
 
         # self.previews is a 2 dimensional dict:
         # self.previews['/tmp/foo.jpg'][(80, 24)] = "the content..."
