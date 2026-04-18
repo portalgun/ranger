@@ -29,6 +29,7 @@ ESCAPE_ICON_TITLE = '\033]1;'
 
 _ASCII = ''.join(chr(c) for c in range(32, 127))
 FFILE  = os.environ.get('RANGER_FOLLOW_FILE')
+FOLLOW = os.environ.get('RANGER_FOLLOW')
 
 def ascii_only(string):
     return ''.join(c if c in _ASCII else '?' for c in string)
@@ -365,11 +366,15 @@ class UI(  # pylint: disable=too-many-instance-attributes,too-many-public-method
     def draw(self):
         """Draw all objects in the container"""
 
-        cwd = self.fm.thisdir.path
-        if FFILE and cwd != self.lastcwd:
-           with open(FFILE, "w") as file:
-               file.write(self.fm.thisdir.path)
-           self.lastcw=cwd # moved
+        if FOLLOW and FFILE and self.fm.thisdir:
+           cwd = self.fm.thisdir.path
+           if cwd != self.lastcwd:
+               with open(FFILE, "w") as file:
+                   try:
+                       file.write(cwd)
+                   except:
+                       pass
+               self.lastcw=cwd # moved
 
         self.win.touchwin()
         DisplayableContainer.draw(self)
