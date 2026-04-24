@@ -115,6 +115,9 @@ class Default(ColorScheme):
                 attr |= bold | reverse
                 fg = yellow
                 fg += BRIGHT
+            if context.imarked:
+                attr |= bold
+                fg = yellow
             if context.frozen:
                 attr |= bold | reverse
                 fg = cyan

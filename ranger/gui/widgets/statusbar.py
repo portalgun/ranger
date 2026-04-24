@@ -279,32 +279,46 @@ class StatusBar(Widget):  # pylint: disable=too-many-instance-attributes
             right.add(self.fm.thisdir.filter.pattern, base, 'filter')
             right.add("', ", "space")
 
+        # SIZE MARKED
         if target.marked_items:
             if len(target.marked_items) == target.size:
-                right.add(human_readable(target.disk_usage, separator=''))
+                sumsize=target.disk_usage
             else:
                 sumsize = sum(f.size for f in target.marked_items
                               if not f.is_directory or f.cumulative_size_calculated)
-                right.add(human_readable(sumsize, separator=''))
-            right.add("/" + str(len(target.marked_items)))
-        else:
-            right.add(human_readable(target.disk_usage, separator='') + " sum")
-            if self.settings.display_free_space_in_status_bar:
-                try:
-                    free = get_free_space(target.path)
-                except OSError:
-                    pass
-                else:
-                    right.add(", ", "space")
-                    right.add(human_readable(free, separator='') + " free")
+            right.add(human_readable(sumsize, separator=''),'','imarked')
+            right.add('/')
+
+        # SIZE SUM
+        right.add(human_readable(target.disk_usage, separator='') + " sum")
+
+        # SIZE FREE
+        if self.settings.display_free_space_in_status_bar:
+            try:
+                free = get_free_space(target.path)
+            except OSError:
+                pass
+            else:
+                right.add(", ", "space")
+                right.add(human_readable(free, separator='') + " free")
         right.add("  ", "space")
 
         if target.marked_items:
             # Indicate that there are marked files. Useful if you scroll
             # away and don't see them anymore.
-            right.add('Mrk', base, 'marked')
+
+            # size
+            right.add(str(len(target.marked_items)),'','imarked')
+
+            # nfiles
+            if target.files:
+                right.add('/' + str(len(target.files)), base)
+
+            # nmark
+            right.add('  ', "space")
+            right.add('Mrk', '', 'marked')
         elif target.files:
-            right.add(str(target.pointer + 1) + '/' + str(len(target.files)) + '  ', base)
+            right.add(' ' + str(target.pointer + 1) + '/' + str(len(target.files)) + '  ', base)
             if max_pos <= 0:
                 right.add('All', base, 'all')
             elif pos == 0:
