@@ -28,8 +28,7 @@ MOUSEMASK = curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION
 ESCAPE_ICON_TITLE = '\033]1;'
 
 _ASCII = ''.join(chr(c) for c in range(32, 127))
-FFILE  = os.environ.get('RANGER_FOLLOW_FILE')
-FOLLOW = os.environ.get('RANGER_FOLLOW')
+
 
 def ascii_only(string):
     return ''.join(c if c in _ASCII else '?' for c in string)
@@ -64,7 +63,6 @@ def _in_screen():
 class UI(  # pylint: disable=too-many-instance-attributes,too-many-public-methods
         DisplayableContainer):
     ALLOWED_VIEWMODES = 'miller', 'multipane'
-    lastcwd=''
 
     is_set_up = False
     load_mode = False
@@ -365,17 +363,6 @@ class UI(  # pylint: disable=too-many-instance-attributes,too-many-public-method
 
     def draw(self):
         """Draw all objects in the container"""
-
-        if FOLLOW and FFILE and self.fm.thisdir:
-           cwd = self.fm.thisdir.path
-           if cwd != self.lastcwd:
-               with open(FFILE, "w") as file:
-                   try:
-                       file.write(cwd)
-                   except:
-                       pass
-               self.lastcw=cwd # moved
-
         self.win.touchwin()
         DisplayableContainer.draw(self)
         if self._draw_title and self.settings.update_title:

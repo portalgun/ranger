@@ -15,6 +15,7 @@ import stat
 import sys
 from collections import deque
 from io import open
+from logging import getLogger
 from subprocess import Popen
 from time import time
 
@@ -34,6 +35,15 @@ from ranger.ext.posix_signals import call_signal_handler, delay_signal
 from ranger.ext.rifle import Rifle
 from ranger.ext.signals import SignalDispatcher
 from ranger.gui.ui import UI
+
+
+LOG = getLogger(__name__)
+
+# When $RANGER_FOLLOW is set, the path of the current directory is written to
+# the file named by $RANGER_FOLLOW_FILE every time it changes, so that other
+# programs can follow along.
+FOLLOW = os.environ.get('RANGER_FOLLOW')
+FOLLOW_FILE = os.environ.get('RANGER_FOLLOW_FILE')
 
 
 class ProcessSet(object):
@@ -80,6 +90,7 @@ class FM(Actions,  # pylint: disable=too-many-instance-attributes
     mode = 'normal'  # either 'normal' or 'visual'.
     search_method = 'ctime'
 
+    _follow_file_cwd = None
     _previous_selection = None
     _visual_reverse = False
     _visual_pos_start = None
@@ -296,6 +307,31 @@ class FM(Actions,  # pylint: disable=too-many-instance-attributes
             'setopt.save_backtick_bookmark',
             lambda signal: signal.fm.bookmarks.enable_saving_backtick_bookmark(signal.value)
         )
+
+        if FOLLOW and FOLLOW_FILE:
+            # These are the two signals after which self.thisdir can differ:
+            # entering a directory in the current tab and switching tabs.
+            self.signal_bind('cd', self.update_follow_file)
+            self.signal_bind('tab.change', self.update_follow_file)
+
+    def update_follow_file(self):
+        """Write the current directory to $RANGER_FOLLOW_FILE.
+
+        Only writes when the path actually changed.  On failure the remembered
+        path is left alone so that the next change retries the write.
+        """
+        if not self.thisdir:
+            return
+        path = self.thisdir.path
+        if path == self._follow_file_cwd:
+            return
+        try:
+            with open(FOLLOW_FILE, 'w', encoding="utf-8") as fobj:
+                fobj.write(path)
+        except (OSError, IOError) as err:
+            LOG.error("Unable to write to follow file '%s': %s", FOLLOW_FILE, err)
+        else:
+            self._follow_file_cwd = path
 
     def destroy(self):
         debug = ranger.args.debug
